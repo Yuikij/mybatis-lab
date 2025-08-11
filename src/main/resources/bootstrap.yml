@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: mybatis-lab
+  cloud:
+    nacos:
+      discovery:
+        # Nacos 服务发现地址
+        server-addr: 172.23.104.184
+      config:
+        # Nacos 配置中心地址
+        server-addr: 172.23.104.184
+        file-extension: yml
+        username: nacos
+        password: nacos
+        namespace: a8ac1021-ffed-46d9-bcc4-b4dd5df0ea9c
+
+---
+# 本地演示：使用 H2 内存数据库
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ''
+  h2:
+    console:
+      enabled: true
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+
+mybatis:
+  # MyBatis 全局配置
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    # 在日志中打印 SQL，便于调试
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath*:mapper/**/*.xml
+

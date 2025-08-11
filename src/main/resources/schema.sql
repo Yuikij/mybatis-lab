@@ -1,0 +1,9 @@
+-- 初始化演示表结构（H2，MySQL 方言兼容）
+DROP TABLE IF EXISTS t_user;
+CREATE TABLE t_user (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(64) NOT NULL,
+  email VARCHAR(128)
+);
+
+
