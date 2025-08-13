@@ -10,6 +10,10 @@
   - 全流程观测（学习/排障用）：`TestInterceptor`
 - 接入 Nacos：服务发现与配置中心（已在 `bootstrap.yml` 配置）
 - 示例接口：`GET /api/users`、`GET /api/users/{id}`
+  - 缓存演示接口：
+    - 一级缓存（同事务复查不发 SQL）：`GET /api/cache/l1/{id}`
+    - 二级缓存（跨请求复用）：`GET /api/cache/l2/{id}`
+    - 失效演示（更新后清空二级缓存）：`GET /api/cache/evict`
 
 ### 运行环境
 - JDK 17
@@ -65,6 +69,17 @@ mvn spring-boot:run
 4) 访问接口
 - `GET http://localhost:8080/api/users`
 - `GET http://localhost:8080/api/users/1`
+ - `GET http://localhost:8080/api/cache/l1/1`
+ - `GET http://localhost:8080/api/cache/l2/1`（先访问一次，再次访问观察控制台仅第一次打印 SQL）
+ - `GET http://localhost:8080/api/cache/evict`（触发更新并清空二级缓存）
+
+### MyBatis 缓存机制简述
+- 一级缓存（本地缓存）：
+  - 作用域：`SqlSession`；同一事务内相同语句+参数命中缓存，不再发 SQL。
+  - 失效：会话提交/回滚、手动清理、执行更新（默认清空本地缓存）。
+- 二级缓存（命名空间缓存）：
+  - 作用域：`Mapper` 命名空间；需要开启全局 `cache-enabled=true` 且在 Mapper 上 `@CacheNamespace`。
+  - 淘汰策略：示例使用 `LruCache`，容量 512；更新默认 `flushCache=true` 会清空当前命名空间缓存。
 
 ### 目录结构（核心）
 ```

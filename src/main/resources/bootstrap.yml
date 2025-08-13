@@ -43,7 +43,9 @@ mybatis:
   # MyBatis 全局配置
   configuration:
     map-underscore-to-camel-case: true
-    cache-enabled: false
+#    cache-enabled: true
+    # 明确一级缓存作用域（默认 session）
+#    local-cache-scope: session
     # 在日志中打印 SQL，便于调试
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath*:mapper/**/*.xml

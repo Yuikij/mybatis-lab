@@ -1,5 +1,7 @@
 package org.kubo.mybatislab.user.controller;
 
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.kubo.mybatislab.mapper.UserMapper;
 import org.kubo.mybatislab.user.model.User;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +17,12 @@ import java.util.List;
 public class UserController {
 
     private final UserMapper userMapper;
+	private final SqlSessionFactory sqlSessionFactory;
 
-    public UserController(UserMapper userMapper) {
-        this.userMapper = userMapper;
-    }
+	public UserController(UserMapper userMapper, SqlSessionFactory sqlSessionFactory) {
+		this.userMapper = userMapper;
+		this.sqlSessionFactory = sqlSessionFactory;
+	}
 
     /**
      * 按 ID 查询用户。
@@ -55,6 +59,17 @@ public class UserController {
         userMapper.deleteAll();
         return "All users deleted";
     }
+
+	@GetMapping("/api/users/cache/l1")
+	public String level1Cache() {
+		// 开启 session，并在同一个 SqlSession 中重复查询以命中一级缓存
+		try (SqlSession session = sqlSessionFactory.openSession(true)) {
+			UserMapper mapper = session.getMapper(UserMapper.class);
+			mapper.findAll(); // 第一次查询，发送 SQL
+			mapper.findAll(); // 第二次相同查询，命中一级缓存（不再发 SQL）
+            return "level1Cache";
+		}
+	}
 }
 
 

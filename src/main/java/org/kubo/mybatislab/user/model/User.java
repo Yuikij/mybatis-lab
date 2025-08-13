@@ -1,12 +1,18 @@
 package org.kubo.mybatislab.user.model;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 /**
  * 用户实体。
  *
  * <p>为简化演示，字段较少。结合 MyBatis 的下划线转驼峰配置，
  * 数据表字段可使用下划线命名。</p>
  */
-public class User {
+public class User implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private String username;
     private String email;
