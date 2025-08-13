@@ -1,34 +1,32 @@
 package org.kubo.mybatislab.config;
 
 import org.kubo.mybatislab.mybatis.plugin.SqlCostInterceptor;
-import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 /**
- * MyBatis 插件注册配置。
+ * MyBatis 插件注册配置（避免重复注册）。
  *
- * <p>通过 {@link ConfigurationCustomizer} 将自定义拦截器注册到 MyBatis 全局配置中。</p>
+ * 说明：
+ * - mybatis-spring-boot-starter 会自动收集 Spring 容器中的 Interceptor Bean 并注册到 MyBatis。
+ * - 因此无需再通过 ConfigurationCustomizer 手动 addInterceptor，否则可能导致拦截器被注册两次、日志重复。
  */
 @Configuration
 public class MybatisPluginConfig {
 
     /**
-     * 注册 SQL 耗时拦截器，并演示通过属性配置慢 SQL 阈值。
+     * 以 Bean 方式提供 SqlCostInterceptor，并设置慢 SQL 阈值。
+     * 其余拦截器（例如 BlockFullTableModifyInterceptor、TestInterceptor）使用 @Component 暴露为 Bean 即可被自动注册。
      */
     @Bean
-    public ConfigurationCustomizer sqlCostInterceptorCustomizer(SqlCostInterceptor sqlCostInterceptor) {
-        // 也可以通过 setProperties 注入属性：
+    public SqlCostInterceptor sqlCostInterceptor(Environment environment) {
+        SqlCostInterceptor interceptor = new SqlCostInterceptor();
+        String threshold = environment.getProperty("mybatis.myPlugins.slowSqlThresholdMs", "100");
         java.util.Properties properties = new java.util.Properties();
-        properties.setProperty("slowSqlThresholdMs", "50");
-        sqlCostInterceptor.setProperties(properties);
-
-        return new ConfigurationCustomizer() {
-            @Override
-            public void customize(org.apache.ibatis.session.Configuration configuration) {
-                configuration.addInterceptor(sqlCostInterceptor);
-            }
-        };
+        properties.setProperty("slowSqlThresholdMs", threshold);
+        interceptor.setProperties(properties);
+        return interceptor;
     }
 }
 

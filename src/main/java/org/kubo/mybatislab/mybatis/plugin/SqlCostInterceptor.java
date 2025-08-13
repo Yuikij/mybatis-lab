@@ -5,7 +5,7 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.sql.Connection;
 import java.util.Properties;
@@ -20,7 +20,6 @@ import java.util.Properties;
  *   <li>展示了如何读取/设置插件属性、以及如何通过 {@link MetaObject} 访问底层对象。</li>
  * </ul>
  */
-@Component
 /*
  * 关于下面的 @Intercepts / @Signature 注解（非常重要）：
  *
@@ -46,6 +45,7 @@ import java.util.Properties;
  *    - 同一个拦截器可以通过多个 @Signature 同时拦截不同接口/不同方法。
  *    - 多个拦截器的执行顺序取决于它们在 MyBatis Configuration 中被添加的先后顺序（类似责任链）。
  */
+@ConditionalOnProperty(prefix = "myPlugins", name = "sqlCostInterceptor", havingValue = "true", matchIfMissing = true)
 @Intercepts({
         @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})
 })
@@ -64,6 +64,12 @@ public class SqlCostInterceptor implements Interceptor {
         //  - method   ：被调用的方法（此处为 StatementHandler#prepare）
         //  - args     ：方法入参列表（此处为 Connection、Integer(transactionTimeout)）
         //  - proceed(): 调用链继续执行（非常重要，若不调用将中断后续逻辑）
+        // 说明：RoutingStatementHandler 会再委派给具体的 *StatementHandler；若两者都被拦截，会出现重复打印。
+        // 这里遇到 RoutingStatementHandler 时直接放行，保证只在具体 Handler 上统计一次。
+        StatementHandler current = (StatementHandler) invocation.getTarget();
+        if (current.getClass().getName().endsWith("RoutingStatementHandler")) {
+            return invocation.proceed();
+        }
         long start = System.currentTimeMillis();
         try {
             // 放行到拦截器链的下一环，最终调用到真实的目标方法。
@@ -87,9 +93,9 @@ public class SqlCostInterceptor implements Interceptor {
 
             // 简单输出到控制台。生产环境建议使用日志框架并按等级输出，同时可增加 traceId / mapperId 等上下文信息。
             if (cost >= slowSqlThresholdMs) {
-                System.out.println("[MyBatis][SLOW-SQL] cost=" + cost + "ms, sql=" + sql);
+                System.out.println("[执行耗时统计拦截器][慢查询] cost=" + cost + "ms, sql=" + sql);
             } else {
-                System.out.println("[MyBatis] cost=" + cost + "ms, sql=" + sql);
+                System.out.println("[执行耗时统计拦截器] cost=" + cost + "ms, sql=" + sql);
             }
         }
     }

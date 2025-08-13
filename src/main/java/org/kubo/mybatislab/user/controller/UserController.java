@@ -33,7 +33,27 @@ public class UserController {
      */
     @GetMapping("/api/users")
     public List<User> list() {
+        System.out.println("Fetching all users");
         return userMapper.findAll();
+    }
+
+
+    @GetMapping("/api/users/updateAll")
+    public String updateAll() {
+        userMapper.updateAll();
+        return "All users updated to kubo";
+    }
+
+    @GetMapping("/api/users/updateOne")
+    public String updateOne() {
+        userMapper.updateOne();
+        return "User with id=1 updated to kubo";
+    }
+
+    @GetMapping("/api/users/deleteAll")
+    public String deleteAll() {
+        userMapper.deleteAll();
+        return "All users deleted";
     }
 }
 
