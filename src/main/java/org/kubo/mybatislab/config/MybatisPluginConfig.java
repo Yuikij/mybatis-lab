@@ -19,15 +19,15 @@ public class MybatisPluginConfig {
      * 以 Bean 方式提供 SqlCostInterceptor，并设置慢 SQL 阈值。
      * 其余拦截器（例如 BlockFullTableModifyInterceptor、TestInterceptor）使用 @Component 暴露为 Bean 即可被自动注册。
      */
-    @Bean
-    public SqlCostInterceptor sqlCostInterceptor(Environment environment) {
-        SqlCostInterceptor interceptor = new SqlCostInterceptor();
-        String threshold = environment.getProperty("mybatis.myPlugins.slowSqlThresholdMs", "100");
-        java.util.Properties properties = new java.util.Properties();
-        properties.setProperty("slowSqlThresholdMs", threshold);
-        interceptor.setProperties(properties);
-        return interceptor;
-    }
+//    @Bean
+//    public SqlCostInterceptor sqlCostInterceptor(Environment environment) {
+//        SqlCostInterceptor interceptor = new SqlCostInterceptor();
+//        String threshold = environment.getProperty("mybatis.myPlugins.slowSqlThresholdMs", "100");
+//        java.util.Properties properties = new java.util.Properties();
+//        properties.setProperty("slowSqlThresholdMs", threshold);
+//        interceptor.setProperties(properties);
+//        return interceptor;
+//    }
 }
 
 

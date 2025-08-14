@@ -5,9 +5,13 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
+import org.apache.ibatis.session.ResultHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
+import java.sql.Statement;
 import java.util.Properties;
 
 /**
@@ -45,9 +49,12 @@ import java.util.Properties;
  *    - 同一个拦截器可以通过多个 @Signature 同时拦截不同接口/不同方法。
  *    - 多个拦截器的执行顺序取决于它们在 MyBatis Configuration 中被添加的先后顺序（类似责任链）。
  */
-@ConditionalOnProperty(prefix = "myPlugins", name = "sqlCostInterceptor", havingValue = "true", matchIfMissing = true)
+@Component
+@ConditionalOnProperty(prefix = "mybatis.myPlugins.sqlCostInterceptor", name = "enable", havingValue = "true", matchIfMissing = true)
 @Intercepts({
-        @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})
+        @Signature(type = StatementHandler.class, method = "update", args = {Statement.class}),
+        @Signature(type = StatementHandler.class, method = "query", args = {Statement.class, ResultHandler.class}),
+
 })
 public class SqlCostInterceptor implements Interceptor {
 
@@ -55,7 +62,8 @@ public class SqlCostInterceptor implements Interceptor {
      * 自定义阈值（毫秒）。当 SQL 执行耗时超过该阈值时，打印告警信息。
      * 可通过 mybatis 插件 properties 注入，默认 100ms。
      */
-    private long slowSqlThresholdMs = 100L;
+    @Value("${mybatis.myPlugins.sqlCostInterceptor.slowSqlThresholdMs:1000}")
+    private long slowSqlThresholdMs;
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -64,12 +72,6 @@ public class SqlCostInterceptor implements Interceptor {
         //  - method   ：被调用的方法（此处为 StatementHandler#prepare）
         //  - args     ：方法入参列表（此处为 Connection、Integer(transactionTimeout)）
         //  - proceed(): 调用链继续执行（非常重要，若不调用将中断后续逻辑）
-        // 说明：RoutingStatementHandler 会再委派给具体的 *StatementHandler；若两者都被拦截，会出现重复打印。
-        // 这里遇到 RoutingStatementHandler 时直接放行，保证只在具体 Handler 上统计一次。
-        StatementHandler current = (StatementHandler) invocation.getTarget();
-        if (current.getClass().getName().endsWith("RoutingStatementHandler")) {
-            return invocation.proceed();
-        }
         long start = System.currentTimeMillis();
         try {
             // 放行到拦截器链的下一环，最终调用到真实的目标方法。

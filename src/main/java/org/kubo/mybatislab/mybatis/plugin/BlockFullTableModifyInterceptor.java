@@ -24,7 +24,7 @@ import java.util.Properties;
 
 */
 @Component
-@ConditionalOnProperty(prefix = "myPlugins", name = "fullTableOperationInterceptor", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "mybatis.myPlugins", name = "blockFullTableModifyInterceptor", havingValue = "true", matchIfMissing = true)
 @Intercepts({
         @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class}),
 })

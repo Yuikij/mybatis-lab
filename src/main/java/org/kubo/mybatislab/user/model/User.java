@@ -9,6 +9,7 @@ import java.io.Serializable;
  * <p>为简化演示，字段较少。结合 MyBatis 的下划线转驼峰配置，
  * 数据表字段可使用下划线命名。</p>
  */
+
 public class User implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -39,6 +40,15 @@ public class User implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+               "id=" + id +
+               ", username='" + username + '\'' +
+               ", email='" + email + '\'' +
+               '}';
     }
 }
 

@@ -36,16 +36,18 @@ spring:
 
 mybatis:
   myPlugins:
-    sqlCostInterceptor: true
-    fullTableOperationInterceptor: true
-    fullProcessInterceptor: true
-    slowSqlThresholdMs: 100
+    blockFullTableModifyInterceptor: true
+    sqlCostInterceptor:
+        enabled: true
+        slowSqlThresholdMs: 50 # 单位毫秒，超过此时间的 SQL 将被记录
+    testInterceptor: true
+
   # MyBatis 全局配置
   configuration:
     map-underscore-to-camel-case: true
-#    cache-enabled: true
+    cache-enabled: false
     # 明确一级缓存作用域（默认 session）
-#    local-cache-scope: session
+    local-cache-scope: STATEMENT
     # 在日志中打印 SQL，便于调试
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath*:mapper/**/*.xml

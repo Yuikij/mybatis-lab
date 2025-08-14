@@ -36,7 +36,7 @@ import java.util.Properties;
  * - ResultSetHandler#handleResultSets：记录结果集规模与元素类型概览
  */
 @Component
-@ConditionalOnProperty(prefix = "myPlugins", name = "fullProcessInterceptor", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "mybatis.myPlugins", name = "testInterceptor", havingValue = "true", matchIfMissing = true)
 @Intercepts({
         @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class}),
 		@Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, org.apache.ibatis.session.ResultHandler.class}),
